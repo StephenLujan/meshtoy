@@ -138,7 +138,7 @@ def main4():
                 for z in range(samples):
                     x2, y2, z2 = x + x_offset, y + y_offset, z + z_offset
                     noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=2)
-                    array[x, y, z] = x2 ** 2 + y2 ** 2 +  z2 ** 2 - half ** 2 + noise
+                    array[x, y, z] = x2 ** 2 + y2 ** 2 + z2 ** 2 - half ** 2 + noise
 
         logging.debug("array")
         logging.debug(array)
@@ -146,7 +146,7 @@ def main4():
         return mcubes.marching_cubes(array, 0)
 
     vertices, triangles = None, None
-    offset = -1.0 * diameter
+    offset = -1.0 * radius
     for tuple in [(0, 0, 0), (0, 0, offset), (0, offset, 0), (0, offset, offset),
                   (offset, 0, 0), (offset, 0, offset), (offset, offset, 0), (offset, offset, offset)]:
         octant_verts, octant_tris = octant(*tuple)
