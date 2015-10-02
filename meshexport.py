@@ -4,11 +4,15 @@ import time
 import numpy as np
 
 import mcubes
+import logging
 
+FORMAT = '%(message)s'
+logging.basicConfig(format=FORMAT,
+                    level=logging.DEBUG)
 
 def export(vertices, triangles, object_name="MyShape", file_name="my_shape"):
     t = time.time()
-    print "exporting dae..."
+    logging.info("exporting dae...")
     # get untaken file_name
     full_path = file_name + ".dae"
     iterator = 2
@@ -17,7 +21,7 @@ def export(vertices, triangles, object_name="MyShape", file_name="my_shape"):
         iterator += 1
 
     mcubes.export_mesh(vertices, triangles, full_path, object_name)
-    print "Done. Result saved in '%s' in %f seconds." % (full_path, time.time() - t)
+    logging.info("Done in %f seconds. Result saved in '%s'" % (time.time() - t, full_path))
 
 
 def export_ply(vertices, triangles, filename):
@@ -29,7 +33,7 @@ def export_ply(vertices, triangles, filename):
 
 def preview(vertices, triangles):
     try:
-        print "Plotting mesh..."
+        logging.info("Plotting mesh for preview...")
         from mayavi import mlab
         mlab.triangular_mesh(
             vertices[:, 0], vertices[:, 1], vertices[:, 2],
@@ -37,4 +41,4 @@ def preview(vertices, triangles):
         print "Done."
         mlab.show()
     except ImportError:
-        print "Could not import mayavi. Interactive demo not available."
+        logging.error("Could not import mayavi. Interactive demo not available.")
