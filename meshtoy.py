@@ -38,19 +38,27 @@ def main():
 def main2():
     t = time.time()
     #from stl import mesh
-    X, Y, Z = np.mgrid[:5, :5, :5]
-    print X
-    print Y
-    print Z
-    u = (X-50)**2 + (Y-50)**2 + (Z-50)**2 - 25**2 #+ pnoise3(X,Y,Z,octaves=3)*3
-    print u
+    diameter = 10
+    radius = diameter / 2
+    half= radius / 2
 
+    X, Y, Z = np.mgrid[:diameter, :diameter, :diameter]
+    print "X"
+    print X
+    print "Y"
+    print Y
+    print "Z"
+    print Z
+    #u = (X-50)**2 + (Y-50)**2 + (Z-50)**2 - 25**2 + pnoise3(X,Y,Z,octaves=3)*3
+    u = (X-radius)**2 + (Y-radius)**2 + (Z-radius)**2 - half**2 #+ pnoise3(X,Y,Z,octaves=3)*3
+    print "u"
+    print u
     # Extract the 0-isosurface
     vertices, triangles = mcubes.marching_cubes(u, 0)
     print "mesh completed in %f seconds" % (time.time() - t)
 
-    meshexport.export(vertices, triangles)
-    meshexport.preview(triangles, vertices)
+    #meshexport.export(vertices, triangles)
+    #meshexport.preview(triangles, vertices)
 
 
 if __name__ == "__main__":
