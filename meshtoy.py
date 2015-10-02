@@ -10,6 +10,9 @@ import meshexport
 
 
 
+
+
+
 # FORMAT = '%(levelname)s - %(threadName)s: %(message)s'
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT,
@@ -29,8 +32,8 @@ AMPLITUDE = 100.0
 
 # Create the volume
 def f(x, y, z):
-    return x ** 2 + y ** 2 + z ** 2 + AMPLITUDE * \
-                                      pnoise3(x * FREQUENCY, y * FREQUENCY, z * FREQUENCY, octaves=2)
+    return x ** 2 + y ** 2 + z ** 2  # + AMPLITUDE * \
+    #  pnoise3(x * FREQUENCY, y * FREQUENCY, z * FREQUENCY, octaves=2)
 
 
 def main():
@@ -41,7 +44,7 @@ def main():
     t = time.time()
     # Extract the 16-isosurface
     vertices, triangles = mcubes.marching_cubes_func(
-        (-bounds, -bounds, -bounds),
+        (-0, -0, -0),
         (bounds, bounds, bounds),
         samples, samples, samples,
         f,  # Implicit function
@@ -58,6 +61,8 @@ def main():
 
 
 def main2():
+    logging.info("(this might take a while...)")
+    samples = 50
     t = time.time()
     #from stl import mesh
     diameter = 10
@@ -84,12 +89,75 @@ def main2():
     #print u
     # Extract the 0-isosurface
     
-    print "u"
+    logging.debug("u")
+    logging.debug(u)
     vertices, triangles = mcubes.marching_cubes(u, 60)
-    print "mesh completed in %f seconds" % (time.time() - t)
+    logging.info("mesh completed in %f seconds" % (time.time() - t))
 
     meshexport.export(vertices, triangles)
     #meshexport.preview(triangles, vertices)
 
+def main3():
+    logging.info("(this might take a while...)")
+    t = time.time()
+    # from stl import mesh
+    samples = 50
+    radius = samples / 2.0
+    half = radius / 2.0
+
+    array = np.ndarray((samples, samples, samples))
+    for x in range(samples):
+        for y in range(samples):
+            for z in range(samples):
+                noise = AMPLITUDE * pnoise3(x * FREQUENCY, y * FREQUENCY, z * FREQUENCY, octaves=2)
+                array[x, y, z] = x ** 2 + y ** 2 + z ** 2 - half ** 2 + noise
+
+    logging.debug("array")
+    logging.debug(array)
+    # Extract the 0-isosurface
+    vertices, triangles = mcubes.marching_cubes(array, 0)
+    logging.info("mesh completed in %f seconds" % (time.time() - t))
+
+    meshexport.export(vertices, triangles)
+    # meshexport.preview(triangles, vertices)
+
+
+def main4():
+    logging.info("(this might take a while...)")
+    t = time.time()
+    # from stl import mesh
+    samples = 50
+    diameter = samples
+    radius = diameter / 2.0
+    half = radius / 2.0
+
+    def octant(x_offset, y_offset, z_offset):
+        array = np.ndarray((samples, samples, samples))
+        for x in range(samples):
+            for y in range(samples):
+                for z in range(samples):
+                    x2, y2, z2 = x + x_offset, y + y_offset, z + z_offset
+                    noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=2)
+                    array[x, y, z] = x2 ** 2 + y2 ** 2 +  z2 ** 2 - half ** 2 + noise
+
+        logging.debug("array")
+        logging.debug(array)
+        # Extract the 0-isosurface
+        return mcubes.marching_cubes(array, 0)
+
+    vertices, triangles = None, None
+    offset = -1.0 * diameter
+    for tuple in [(0, 0, 0), (0, 0, offset), (0, offset, 0), (0, offset, offset),
+                  (offset, 0, 0), (offset, 0, offset), (offset, offset, 0), (offset, offset, offset)]:
+        octant_verts, octant_tris = octant(*tuple)
+        meshexport.export(octant_verts, octant_tris)
+        vertices = octant_verts if vertices is None else np.concatenate([vertices, octant_verts])
+        triangles = octant_tris if triangles is None else np.concatenate([triangles, octant_tris])
+
+    logging.info("mesh completed in %f seconds" % (time.time() - t))
+
+    meshexport.export(octant_verts, octant_tris, "combined", "combined")
+    # meshexport.preview(triangles, vertices)
+
 if __name__ == "__main__":
-    main()
+    main4()
