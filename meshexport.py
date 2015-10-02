@@ -8,7 +8,7 @@ import logging
 
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT,
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 
 def export(vertices, triangles, object_name="MyShape", file_name="my_shape"):
     t = time.time()
