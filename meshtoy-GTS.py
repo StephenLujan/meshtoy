@@ -87,7 +87,7 @@ def main3():
     logging.info("(this might take a while...)")
     t = time.time()
     # from stl import mesh
-    samples = 50
+    samples = 200
     radius = samples / 2.0
     half = radius / 2.0
 
@@ -95,6 +95,7 @@ def main3():
     for x in range(samples):
         for y in range(samples):
             for z in range(samples):
+                
                 noise = AMPLITUDE * pnoise3(x * FREQUENCY, y * FREQUENCY, z * FREQUENCY, octaves=2)
                 array[x, y, z] = x ** 2 + y ** 2 + z ** 2 - half ** 2 + noise
 

@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import mcubes
 from noise import pnoise3
+import gts
 
 import meshexport
 
@@ -27,8 +28,8 @@ def LineSegmentFactory((x1, y1, z1), (x2, y2, z2), radius=1):
     return lambda x, y, z: x
 
 
-FREQUENCY = 1.0
-AMPLITUDE = 100.0
+FREQUENCY = 0.02
+AMPLITUDE = 10000.0
 
 
 # Create the volume
@@ -130,13 +131,15 @@ def octant(samples, isosurface, x_offset, y_offset, z_offset):
         for y in range(samples):
             for z in range(samples):
                 x2, y2, z2 = x + x_offset, y + y_offset, z + z_offset
-                noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=2)
+                noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=4)
                 array[x, y, z] = x2 ** 2 + y2 ** 2 + z2 ** 2 - isosurface ** 2 + noise
 
     logging.debug("array")
     logging.debug(array)
     # Extract the 0-isosurface
-    return mcubes.marching_cubes(array, 0)
+    #return mcubes.marching_cubes(array, 0)
+    return gts.isosurface(array,0)
+
 
 
 def main4():
@@ -197,6 +200,15 @@ def main5():
     meshexport.export(octant_verts, octant_tris, "combined", "combined")
     # meshexport.preview(triangles, vertices)
 
+def mainGTS():
+    logging.info("(this might take a while...)")
+    samples = 200
+    radius = samples*0.5
+    iso = 50
+    t = time.time()
+    surface = octant(samples, iso, -samples*0.5, -samples*0.5, -samples*0.5)
+    logging.info("mesh completed in %f seconds" % (time.time() - t))
+    surface.write(open('isosphere.gts','w'))
 
 if __name__ == "__main__":
-    main5()
+    mainGTS()
