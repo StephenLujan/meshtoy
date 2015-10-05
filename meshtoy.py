@@ -9,11 +9,6 @@ import meshexport
 
 
 
-
-
-
-
-
 # FORMAT = '%(levelname)s - %(threadName)s: %(message)s'
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT,
@@ -124,15 +119,29 @@ def main3():
     # meshexport.preview(triangles, vertices)
 
 
-def octant(samples, isosurface, x_offset, y_offset, z_offset):
+def octant_array(samples, isosurface, x_offset, y_offset, z_offset):
+    """
+
+    :param samples: the number of samples per dimension per octant,
+     the full model would have samples**3 * 8 samples
+    :param isosurface:
+    :param x_offset: controls which octant
+    :param y_offset:
+    :param z_offset:
+    :return: a numpy.ndarray
+    """
     array = np.ndarray((samples, samples, samples))
+    isosurface **= 2
     for x in range(samples):
         for y in range(samples):
             for z in range(samples):
                 x2, y2, z2 = x + x_offset, y + y_offset, z + z_offset
                 noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=2)
-                array[x, y, z] = x2 ** 2 + y2 ** 2 + z2 ** 2 - isosurface ** 2 + noise
+                array[x, y, z] = x2 ** 2 + y2 ** 2 + z2 ** 2 - isosurface + noise
+    return array
 
+def octant(samples, isosurface, x_offset, y_offset, z_offset):
+    array = octant_array(samples, isosurface, x_offset, y_offset, z_offset)
     logging.debug("array")
     logging.debug(array)
     # Extract the 0-isosurface
