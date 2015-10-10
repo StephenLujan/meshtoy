@@ -23,7 +23,7 @@ def LineSegmentFactory((x1, y1, z1), (x2, y2, z2), radius=1):
     return lambda x, y, z: x
 
 
-FREQUENCY = 0.02
+FREQUENCY = 0.03
 AMPLITUDE = 10000.0
 
 
@@ -120,7 +120,7 @@ def main3():
     # meshexport.preview(triangles, vertices)
 
 
-def octant_array(samples, isosurface, x_offset, y_offset, z_offset):
+def octant_array(samples, isosurface, x_offset, y_offset, z_offset, spherefactor=1):
     """
 
     :param samples: the number of samples per dimension per octant,
@@ -129,6 +129,7 @@ def octant_array(samples, isosurface, x_offset, y_offset, z_offset):
     :param x_offset: controls which octant
     :param y_offset:
     :param z_offset:
+    :param spherefactor: power to apply to the spherical component. use 0.5 for a linear sphere.
     :return: a numpy.ndarray
     """
     array = np.ndarray((samples, samples, samples))
@@ -138,12 +139,12 @@ def octant_array(samples, isosurface, x_offset, y_offset, z_offset):
             for z in range(samples):
                 x2, y2, z2 = x + x_offset, y + y_offset, z + z_offset
                 noise = AMPLITUDE * pnoise3(x2 * FREQUENCY, y2 * FREQUENCY, z2 * FREQUENCY, octaves=2)
-                array[x, y, z] = x2 ** 2 + y2 ** 2 + z2 ** 2 - isosurface + noise
+                array[x, y, z] = isosurface - pow(x2 ** 2 + y2 ** 2 + z2 ** 2,spherefactor) - noise
     return array
 
 
-def octant(samples, isosurface, x_offset, y_offset, z_offset):
-    array = octant_array(samples, isosurface, x_offset, y_offset, z_offset)
+def octant(samples, isosurface, x_offset, y_offset, z_offset, spherefactor=1):
+    array = octant_array(samples, isosurface, x_offset, y_offset, z_offset, spherefactor=spherefactor)
     logging.debug("array")
     logging.debug(array)
     # Extract the 0-isosurface
@@ -214,11 +215,15 @@ def mainGTS():
     logging.info("(this might take a while...)")
     samples = 200
     radius = samples*0.5
-    iso = 50
     t = time.time()
-    surface = octant(samples, iso, -samples*0.5, -samples*0.5, -samples*0.5)
+    surface = octant(samples, 50, -samples*0.5, -samples*0.5, -samples*0.5)
     logging.info("mesh completed in %f seconds" % (time.time() - t))
     surface.write(open('isosphere.gts','w'))
+    logging.info("meshing again with different parameters...")
+    t = time.time()
+    surface = octant(samples, 80, -samples*0.5, -samples*0.5, -samples*0.5,spherefactor=1.15)
+    surface.write(open('isosphere-water.gts','w'))
+    logging.info("mesh completed in %f seconds" % (time.time() - t))
 
 if __name__ == "__main__":
     mainGTS()
